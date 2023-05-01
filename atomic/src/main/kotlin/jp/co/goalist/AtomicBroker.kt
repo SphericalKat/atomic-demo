@@ -7,6 +7,7 @@ import jp.co.goalist.transport.Transport
 import jp.co.goalist.utils.getSystemName
 import org.slf4j.LoggerFactory
 import java.util.UUID
+import kotlin.system.exitProcess
 
 class AtomicBroker(
     nodeID: String? = null,
@@ -15,6 +16,8 @@ class AtomicBroker(
 ) {
     var nodeID: String
         private set
+
+    val instanceID: String
 
     var transporter: String = transporter
         private set
@@ -30,6 +33,7 @@ class AtomicBroker(
 
     init {
         this.nodeID = nodeID ?: "${getSystemName()}-${UUID.randomUUID()}"
+        this.instanceID = UUID.randomUUID().toString()
         this.transport = Transport.resolveTransport(this)
         this.serializer = Serializers.resolve(serializer, this)
 
@@ -42,6 +46,12 @@ class AtomicBroker(
         this.started = true
 
         logger.info("ServiceBroker with this.services.length service(s) started successfully.")
+    }
+
+    fun fatal(message: String, e: Exception? = null, needExit: Boolean = true) {
+        logger.error("Fatal error: $message $e")
+
+        if (needExit) exitProcess(1)
     }
 
     companion object {

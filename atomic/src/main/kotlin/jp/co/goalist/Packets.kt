@@ -20,5 +20,5 @@ enum class Packets(val string: String) {
 data class Packet(
     val type: Packets = Packets.PACKET_UNKNOWN,
     val target: String? = null,
-    val payload: MutableMap<String, Any>
+    val payload: MutableMap<String, Any>?
 )
