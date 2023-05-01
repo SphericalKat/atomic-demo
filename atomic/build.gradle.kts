@@ -1,8 +1,7 @@
-import java.net.URI
-
 plugins {
     id("java-library")
     id ("maven-publish")
+    kotlin("jvm") version "1.7.22"
 }
 
 group = "jp.co.goalist"
@@ -34,8 +33,15 @@ repositories {
 dependencies {
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    implementation(kotlin("stdlib-jdk8"))
+
+    // AMQP client
+    implementation("com.rabbitmq:amqp-client:5.17.0")
 }
 
 tasks.test {
     useJUnitPlatform()
+}
+kotlin {
+    jvmToolchain(11)
 }
