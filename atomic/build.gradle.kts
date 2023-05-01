@@ -6,7 +6,6 @@ plugins {
 }
 
 group = "jp.co.goalist"
-version = "0.0.1-SNAPSHOT"
 
 publishing {
     publications {
