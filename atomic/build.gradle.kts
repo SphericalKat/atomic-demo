@@ -37,6 +37,12 @@ dependencies {
 
     // AMQP client
     implementation("com.rabbitmq:amqp-client:5.17.0")
+
+    // Logging
+    implementation("org.apache.logging.log4j:log4j-api:2.7")
+    implementation("org.apache.logging.log4j:log4j-core:2.12.4")
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.7")
+
 }
 
 tasks.test {

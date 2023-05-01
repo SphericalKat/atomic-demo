@@ -3,6 +3,7 @@ package jp.co.goalist
 import jp.co.goalist.transport.AMQPTransport
 import jp.co.goalist.transport.Transport
 import jp.co.goalist.utils.getSystemName
+import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class AtomicBroker(
@@ -24,21 +25,21 @@ class AtomicBroker(
 
     init {
         this.nodeID = nodeID ?: "${getSystemName()}-${UUID.randomUUID()}"
-        this.transport = resolveTransport()
+        this.transport = Transport.resolveTransport(this)
 
         this.started = false
         this.stopping = false
     }
 
-    private fun resolveTransport(): Transport {
-        if (this.transporter.startsWith("amqp://") || this.transporter.startsWith("amqps://")) {
-            return AMQPTransport(this)
-        }
+    fun start() {
+        this.transport.connect()
+        this.started = true
 
-        throw Errors.BrokerOptionsException("Invalid transporter type $transporter.")
+        logger.info("ServiceBroker with this.services.length service(s) started successfully.")
     }
 
     companion object {
         const val projectName = "ATOMIC"
+        val logger = LoggerFactory.getLogger(AtomicBroker::class.java)
     }
 }
