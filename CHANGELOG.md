@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/sphericalkat/atomic-demo/compare/v1.0.0...v1.0.1) (2023-05-01)
+
+
+### Bug Fixes
+
+* **ci:** remove explicit release ([b1f5db7](https://github.com/sphericalkat/atomic-demo/commit/b1f5db7dc2f98cc43529c92f989f90245c03b2a6))
+
 # 1.0.0 (2023-05-01)
 
 
