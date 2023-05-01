@@ -6,6 +6,7 @@ plugins {
 }
 
 group = "jp.co.goalist"
+version = project.version
 
 publishing {
     publications {
