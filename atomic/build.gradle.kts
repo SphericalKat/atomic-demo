@@ -1,7 +1,6 @@
 import java.net.URI
 
 plugins {
-    id("java")
     id("java-library")
     id ("maven-publish")
 }
@@ -9,6 +8,12 @@ plugins {
 group = "jp.co.goalist"
 
 publishing {
+    publications {
+        create<MavenPublication>("atomic") {
+            from(components["java"])
+        }
+    }
+
     repositories {
         maven {
             name = "GithubPackages"
