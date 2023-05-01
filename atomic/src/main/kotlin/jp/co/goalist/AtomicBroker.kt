@@ -1,5 +1,7 @@
 package jp.co.goalist
 
+import jp.co.goalist.serializers.BaseSerializer
+import jp.co.goalist.serializers.Serializers
 import jp.co.goalist.transport.AMQPTransport
 import jp.co.goalist.transport.Transport
 import jp.co.goalist.utils.getSystemName
@@ -9,6 +11,7 @@ import java.util.UUID
 class AtomicBroker(
     nodeID: String? = null,
     transporter: String,
+    serializer: String = "JSON",
 ) {
     var nodeID: String
         private set
@@ -18,6 +21,8 @@ class AtomicBroker(
 
     private var transport: Transport
 
+    var serializer: BaseSerializer
+
     var started: Boolean
 
     var stopping: Boolean
@@ -26,6 +31,7 @@ class AtomicBroker(
     init {
         this.nodeID = nodeID ?: "${getSystemName()}-${UUID.randomUUID()}"
         this.transport = Transport.resolveTransport(this)
+        this.serializer = Serializers.resolve(serializer, this)
 
         this.started = false
         this.stopping = false
@@ -41,5 +47,6 @@ class AtomicBroker(
     companion object {
         const val projectName = "ATOMIC"
         val logger = LoggerFactory.getLogger(AtomicBroker::class.java)
+        const val PROTOCOL_VER = 1.0
     }
 }

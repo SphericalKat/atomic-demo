@@ -4,6 +4,7 @@ import com.rabbitmq.client.BuiltinExchangeType
 import com.rabbitmq.client.Channel
 import com.rabbitmq.client.Connection
 import com.rabbitmq.client.ConnectionFactory
+import com.rabbitmq.client.Delivery
 import jp.co.goalist.AtomicBroker
 import jp.co.goalist.Packets
 import org.slf4j.Logger
@@ -52,6 +53,7 @@ class AMQPTransport(broker: AtomicBroker) : Transport(broker) {
             val needAck = listOf(Packets.PACKET_REQUEST).indexOf(cmd) != -1
             val queueOptions = getQueueOptions(cmd)
             channel!!.queueDeclare(topic, false, false, queueOptions.autoDelete, null)
+            channel!!.basicConsume(topic, consume(cmd, needAck)) { _ -> }
         } else {
             val queueName = "${this.prefix}.${cmd}.${this.nodeID}"
             channel!!.exchangeDeclare(topic, BuiltinExchangeType.FANOUT)
@@ -96,8 +98,16 @@ class AMQPTransport(broker: AtomicBroker) : Transport(broker) {
         return queueOptions
     }
 
-    private fun consume(cmd: Packets, needAck: Boolean = false) {
+    private fun consume(cmd: Packets, needAck: Boolean = false): (String, Delivery) -> Unit {
+        return { consumerTag: String, msg: Delivery ->
 
+            // If a promise is returned, acknowledge the message after it has resolved.
+            // This means that if a worker dies after receiving a message but before responding, the
+            // message won't be lost, and it can be retried.
+            if (needAck) {
+                this.channel?.basicAck(msg.envelope.deliveryTag, false)
+            }
+        }
     }
 
     companion object {
