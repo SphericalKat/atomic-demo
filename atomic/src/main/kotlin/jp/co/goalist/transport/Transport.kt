@@ -10,6 +10,7 @@ abstract class Transport(protected val broker: AtomicBroker) {
     protected var prefix: String = "ATOM"
     protected var nodeID: String
     protected val instanceID: String
+    abstract val type: String
     var connected: Boolean
 
     init {
@@ -22,7 +23,7 @@ abstract class Transport(protected val broker: AtomicBroker) {
 
     abstract fun subscribe(cmd: Packets, nodeID: String?)
 
-    fun makeSubscriptions(topics: ArrayList<Topic>) {
+    fun makeSubscriptions(topics: List<Topic>) {
         topics.map { t -> this.subscribe(t.cmd, t.nodeID) }
     }
 
@@ -87,6 +88,8 @@ abstract class Transport(protected val broker: AtomicBroker) {
                 // throw new error here
                 throw Errors.AtomicServerError("${payload["action"]} ${this.nodeID}")
             }
+        } catch (e: Exception) {
+            // TODO: deal with exception
         }
     }
 
