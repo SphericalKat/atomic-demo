@@ -166,5 +166,6 @@ message PacketMessage {
   PacketType packetType = 13;
   string ver = 14;
   string sender = 15;
+  string target = 16;
 }
 

@@ -40,6 +40,20 @@ abstract class Transport(protected val broker: AtomicBroker) {
         }
     }
 
+    data class SendMeta(
+        val balanced: Boolean = false,
+        val packet: PacketMessage? = null
+    )
+
+    abstract fun send(topic: String, data: ByteArray, meta: SendMeta)
+
+    fun publish(packet: PacketMessage) {
+        val topic = getTopicName(packet.packetType, packet.target)
+        val data = this.serialize(packet)
+
+        return this.send(topic, data, SendMeta(packet = packet))
+    }
+
     private fun requestHandler(payload: MutableMap<String, Any>) {
         val requestID = payload["requestID"]?.let { "with requestID '$it'" } ?: ""
         logger.debug("<= Request '{}' {} received from '{}' node.", payload["action"], requestID, payload["sender"])

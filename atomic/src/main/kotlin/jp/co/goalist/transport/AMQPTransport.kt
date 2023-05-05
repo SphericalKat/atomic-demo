@@ -84,6 +84,19 @@ class AMQPTransport(broker: AtomicBroker) : Transport(broker) {
         }
     }
 
+    override fun send(topic: String, data: ByteArray, meta: SendMeta) {
+        if (this.channel == null) return
+
+        if (meta.packet?.target != null || meta.balanced) {
+            // there is a target, or this is a balanced send. either way, we publish directly to the queue
+            // setting exchange as "" and routing key to topic directly publishes to the target queue
+            this.channel!!.basicPublish("", topic, null, data)
+        } else {
+            // more traditional publish to the exchange
+            this.channel!!.basicPublish(topic, "", null, data)
+        }
+    }
+
     private fun getQueueOptions(packetType: PacketType, balancedQueue: Boolean = false): QueueOptions {
         val queueOptions = QueueOptions()
 
