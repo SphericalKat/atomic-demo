@@ -1,8 +1,8 @@
 package jp.co.goalist.transport
 
-import jp.co.goalist.Packets
+import jp.co.goalist.PacketType
 
 data class Topic(
-    val cmd: Packets,
+    val cmd: PacketType,
     val nodeID: String? = null
 )

@@ -1,15 +1,15 @@
 package jp.co.goalist.transport
 
-import jp.co.goalist.AtomicBroker
-import jp.co.goalist.Errors
-import jp.co.goalist.Packet
-import jp.co.goalist.Packets
+import jp.co.goalist.*
 import org.slf4j.LoggerFactory
 
 abstract class Transport(protected val broker: AtomicBroker) {
     protected var prefix: String = "ATOM"
     protected var nodeID: String
     protected val instanceID: String
+    var afterConnect: ((Boolean) -> Unit)? = null
+    lateinit var transit: Transit
+
     abstract val type: String
     var connected: Boolean
 
@@ -21,54 +21,22 @@ abstract class Transport(protected val broker: AtomicBroker) {
 
     abstract fun connect()
 
-    abstract fun subscribe(cmd: Packets, nodeID: String?)
+    abstract fun subscribe(cmd: PacketType, nodeID: String?)
 
     fun makeSubscriptions(topics: List<Topic>) {
         topics.map { t -> this.subscribe(t.cmd, t.nodeID) }
     }
 
-    protected fun getTopicName(cmd: String, nodeID: String?): String {
+    protected fun getTopicName(cmd: PacketType, nodeID: String?): String {
         return "${this.prefix}.${cmd}${nodeID?.let { ".$it" } ?: ""}"
     }
 
-    protected fun receive(cmd: Packets, msg: ByteArray) {
+    protected fun receive(packetType: PacketType, msg: ByteArray) {
         try {
-            val packet = this.deserialize(cmd, msg)
+            val packet = this.deserialize(packetType, msg)
         } catch (e: Exception) {
-            logger.warn("Invalid incoming packet. Type: ${cmd.string}", e)
+            logger.warn("Invalid incoming packet. Type: $packetType", e)
             logger.debug("Content: {}", msg)
-        }
-    }
-
-    protected fun messageHandler(cmd: Packets, packet: Packet): Boolean {
-        try {
-            val payload = packet.payload ?: throw Errors.AtomicServerError("Missing response payload.")
-
-            // TODO: check protocol version here
-
-            // packet came from our own node
-            if (payload["sender"] as String == this.nodeID) {
-                // detect nodeID conflicts
-                if (cmd == Packets.PACKET_INFO && payload["instanceID"] as String == this.instanceID) {
-                    this.broker.fatal("ServiceBroker has detected a nodeID conflict. Use unique nodeIDs. ServiceBroker stopped.")
-                    return false
-                }
-
-                // skip our own packets
-                if (cmd != Packets.PACKET_EVENT && cmd != Packets.PACKET_REQUEST && cmd != Packets.PACKET_RESPONSE) {
-                    return false
-                }
-            }
-
-            // request
-            if (cmd == Packets.PACKET_REQUEST) {
-
-            }
-
-            return true
-        } catch (e: Exception) {
-            logger.error("cmd: $cmd packet: $packet", e)
-            return false
         }
     }
 
@@ -93,17 +61,18 @@ abstract class Transport(protected val broker: AtomicBroker) {
         }
     }
 
-    protected fun deserialize(type: Packets, buf: ByteArray): Packet? {
+    protected fun deserialize(type: PacketType, buf: ByteArray): PacketMessage? {
         if (buf.isEmpty()) return null
 
-        val msg = this.broker.serializer.deserialize(buf, type)
-        return Packet(type, null, msg)
+        return broker.serializer.deserialize(buf, type)
     }
 
-    protected fun serialize(packet: Packet): ByteArray {
-        packet.payload["ver"] = AtomicBroker.PROTOCOL_VER
-        packet.payload["sender"] = this.nodeID
-        return this.broker.serializer.serialize(packet.payload, packet.type)
+    protected fun serialize(packet: PacketMessage): ByteArray {
+        val newPacket = packet.copy(
+            ver = AtomicBroker.PROTOCOL_VER.toString(),
+            sender = this.nodeID,
+        )
+        return this.broker.serializer.serialize(newPacket, newPacket.packetType)
     }
 
     companion object {

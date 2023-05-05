@@ -48,7 +48,7 @@ class AtomicBroker(
     }
 
     fun start() {
-        this.transport.connect()
+        this.transit.connect()
         this.started = true
 
         logger.info("ServiceBroker with this.services.length service(s) started successfully.")

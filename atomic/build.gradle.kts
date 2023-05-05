@@ -2,6 +2,7 @@ plugins {
     id("java-library")
     id ("maven-publish")
     kotlin("jvm") version "1.7.22"
+    id("com.squareup.wire") version ("4.6.0")
 }
 
 group = "jp.co.goalist"
@@ -30,6 +31,13 @@ repositories {
     mavenCentral()
 }
 
+
+wire {
+   kotlin {
+       boxOneOfsMinSize = 10
+   }
+}
+
 dependencies {
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -47,11 +55,16 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
 
+    // protobuf
+    implementation("com.google.protobuf:protobuf-kotlin:3.22.4")
+
 }
 
 tasks.test {
     useJUnitPlatform()
 }
+
+
 kotlin {
-    jvmToolchain(11)
+    jvmToolchain(17)
 }

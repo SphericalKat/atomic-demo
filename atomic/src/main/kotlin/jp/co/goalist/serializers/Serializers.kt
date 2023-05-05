@@ -7,11 +7,10 @@ import java.util.*
 class Serializers {
     companion object {
         fun resolve(opt: String, broker: AtomicBroker): BaseSerializer {
-            if (opt.lowercase(Locale.getDefault()) == "json") {
-                return JSONSerializer(broker)
+            return when (opt.lowercase(Locale.getDefault())) {
+                "proto", "protobuf" -> ProtobufSerializer(broker)
+                else -> throw Errors.BrokerOptionsException("Invalid serializer type $opt")
             }
-
-            throw Errors.BrokerOptionsException("Invalid serializer type $opt")
         }
     }
 }

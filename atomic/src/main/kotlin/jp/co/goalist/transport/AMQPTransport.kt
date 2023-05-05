@@ -6,13 +6,17 @@ import com.rabbitmq.client.Connection
 import com.rabbitmq.client.ConnectionFactory
 import com.rabbitmq.client.Delivery
 import jp.co.goalist.AtomicBroker
+import jp.co.goalist.PacketMessage
+import jp.co.goalist.PacketType
 import jp.co.goalist.Packets
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
+import kotlin.math.log
 
 data class QueueOptions(
-    var autoDelete: Boolean = false
+    var autoDelete: Boolean = false,
+    var options: Map<String, Any>? = null
 )
 
 class AMQPTransport(broker: AtomicBroker) : Transport(broker) {
@@ -20,6 +24,7 @@ class AMQPTransport(broker: AtomicBroker) : Transport(broker) {
 
     private lateinit var connection: Connection
     private var channel: Channel? = null
+    private var connectionCount = 0
     override val type: String
         get() = "AMQP"
 
@@ -32,76 +37,76 @@ class AMQPTransport(broker: AtomicBroker) : Transport(broker) {
         try {
             connection.createChannel().let {
                 this.channel = it
-                this.onConnected(false)
+                this.connectionCount += 1
+                val isReconnect = this.connectionCount > 1
 
+                if (isReconnect) {
+                    this.transit.makeSubscriptions()
+                }
+
+                this.onConnected(isReconnect)
             }
         } catch (e: IOException) {
             logger.warn("Connection failed.", e)
         }
     }
 
-    fun onConnected(wasReconnect: Boolean) {
-
+    private fun onConnected(wasReconnect: Boolean) {
+        this.connected = true
+        this.afterConnect?.invoke(wasReconnect)
     }
 
-    override fun subscribe(cmd: Packets, nodeID: String?) {
-        if (channel == null) {
+    override fun subscribe(cmd: PacketType, nodeID: String?) {
+        if (this.channel == null) {
             return
         }
 
-        val topic = getTopicName(cmd.string, nodeID)
+        val channel = this.channel!! // just to remove null checks everywhere
+
+        val topic = getTopicName(cmd, nodeID)
 
         // some topics are specific to this node already, in this case we don't need an exchange
         if (nodeID != null) {
-            val needAck = listOf(Packets.PACKET_REQUEST).indexOf(cmd) != -1
+            val needAck = cmd == PacketType.PACKET_REQUEST
             val queueOptions = getQueueOptions(cmd)
-            channel!!.queueDeclare(topic, false, false, queueOptions.autoDelete, null)
-            channel!!.basicConsume(topic, consumeCallback(cmd, needAck)) { _ -> }
+            channel.queueDeclare(topic, true, false, queueOptions.autoDelete, queueOptions.options)
+            channel.basicConsume(topic, consumeCallback(cmd, needAck)) { _ -> }
         } else {
             val queueName = "${this.prefix}.${cmd}.${this.nodeID}"
-            channel!!.exchangeDeclare(topic, BuiltinExchangeType.FANOUT)
+
+            channel.exchangeDeclare(topic, BuiltinExchangeType.FANOUT, true)
+
             val queueOptions = getQueueOptions(cmd)
-            channel!!.queueDeclare(queueName, false, false, queueOptions.autoDelete, null)
+            channel.queueDeclare(queueName, true, false, queueOptions.autoDelete, queueOptions.options)
+
+            channel.queueBind(queueName, topic, "")
+            channel.basicConsume(queueName, consumeCallback(cmd)) { _ -> }
         }
     }
 
-    private fun getQueueOptions(packetType: Packets, balancedQueue: Boolean = false): QueueOptions {
+    private fun getQueueOptions(packetType: PacketType, balancedQueue: Boolean = false): QueueOptions {
         val queueOptions = QueueOptions()
 
         when (packetType) {
-            // requests and responses don't expire
-            Packets.PACKET_REQUEST -> {
-
-            }
-
-            Packets.PACKET_EVENT -> {
-
-            }
-
-            Packets.PACKET_RESPONSE -> {
-
-            }
-
-            // Packet types meant for internal use
-            Packets.PACKET_HEARTBEAT -> {
+            PacketType.PACKET_HEARTBEAT -> {
                 queueOptions.autoDelete = true
             }
 
-            Packets.PACKET_DISCOVER,
-            Packets.PACKET_DISCONNECT,
-            Packets.PACKET_UNKNOWN,
-            Packets.PACKET_INFO,
-            Packets.PACKET_PING,
-            Packets.PACKET_PONG -> {
+            PacketType.PACKET_DISCOVER,
+            PacketType.PACKET_DISCONNECT,
+            PacketType.PACKET_INFO,
+            PacketType.PACKET_PING,
+            PacketType.PACKET_PONG -> {
                 queueOptions.autoDelete = true
             }
 
             else -> {}
         }
+
         return queueOptions
     }
 
-    private fun consumeCallback(cmd: Packets, needAck: Boolean = false): (String, Delivery) -> Unit {
+    private fun consumeCallback(cmd: PacketType, needAck: Boolean = false): (String, Delivery) -> Unit {
         return { _: String, msg: Delivery ->
             val result = this.receive(cmd, msg.body)
 
