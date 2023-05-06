@@ -1,3 +1,12 @@
+# [1.2.0](https://github.com/sphericalkat/atomic-demo/compare/v1.1.0...v1.2.0) (2023-05-06)
+
+
+### Features
+
+* implement queue subscription ([4d2c7b1](https://github.com/sphericalkat/atomic-demo/commit/4d2c7b1a79a28a6bba73058278412b832dcfd580))
+* implement transit class ([bc03d1f](https://github.com/sphericalkat/atomic-demo/commit/bc03d1f693f25ba2f97622856d34c5b6fd6e5206))
+* **transport:** implement send ([e2f9c8e](https://github.com/sphericalkat/atomic-demo/commit/e2f9c8ead80214ff5b48a7e979313a7eaf4b8d0d))
+
 # [1.1.0](https://github.com/sphericalkat/atomic-demo/compare/v1.0.1...v1.1.0) (2023-05-01)
 
 
