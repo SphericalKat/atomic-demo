@@ -1,3 +1,13 @@
+# [1.1.0](https://github.com/sphericalkat/atomic-demo/compare/v1.0.1...v1.1.0) (2023-05-01)
+
+
+### Features
+
+* add packet types and handlers ([a696674](https://github.com/sphericalkat/atomic-demo/commit/a69667483242b205cd2ce8b21125503340e46868))
+* begin work on request handler ([f13f65a](https://github.com/sphericalkat/atomic-demo/commit/f13f65a7c35bb2778cd2e3e98b248ca6aae02db0))
+* implement serializers ([3857de5](https://github.com/sphericalkat/atomic-demo/commit/3857de57b488acd13774c2dc72b4463de23b3cbb))
+* set up transporter structure ([9c599c2](https://github.com/sphericalkat/atomic-demo/commit/9c599c2623d754f4ba0d90ccee2da5a20b77e460))
+
 ## [1.0.1](https://github.com/sphericalkat/atomic-demo/compare/v1.0.0...v1.0.1) (2023-05-01)
 
 
