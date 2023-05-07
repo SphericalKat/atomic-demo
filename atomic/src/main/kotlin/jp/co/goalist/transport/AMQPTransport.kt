@@ -5,6 +5,7 @@ import com.rabbitmq.client.Channel
 import com.rabbitmq.client.Connection
 import com.rabbitmq.client.ConnectionFactory
 import com.rabbitmq.client.Delivery
+import com.rabbitmq.client.impl.ForgivingExceptionHandler
 import jp.co.goalist.AtomicBroker
 import jp.co.goalist.PacketMessage
 import jp.co.goalist.PacketType
@@ -39,6 +40,7 @@ class AMQPTransport(broker: AtomicBroker) : Transport(broker) {
     override fun connect() {
         logger.info("Connecting to the transporter...")
         val factory = ConnectionFactory()
+        factory.exceptionHandler = ForgivingExceptionHandler()
         this.connection = factory.newConnection(broker.transporter)
 
         try {

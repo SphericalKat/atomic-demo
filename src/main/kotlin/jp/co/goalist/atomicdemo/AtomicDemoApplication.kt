@@ -23,7 +23,14 @@ class AtomicComponent {
 class AtomicDemoApplication
 
 fun main(args: Array<String>) {
-	getIpAddresses()
+//	getIpAddresses()
+	val atomic = AtomicBroker(
+		transporter = "amqp://guest:guest@localhost:5672",
+		serializer = "protobuf"
+	)
+	atomic.start()
+	while (true) {
 
-	runApplication<AtomicDemoApplication>(*args)
+	}
+//	runApplication<AtomicDemoApplication>(*args)
 }

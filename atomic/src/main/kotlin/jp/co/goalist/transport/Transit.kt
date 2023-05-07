@@ -7,8 +7,6 @@ import jp.co.goalist.utils.Event
 import jp.co.goalist.utils.executeWithRetry
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
-import kotlin.math.log
 
 class Transit(
     private val broker: AtomicBroker,
@@ -62,6 +60,7 @@ class Transit(
         // TODO: discover all nodes
         this.connected = true
         this.broker.broadcastLocal("#transporter.connected", Event(data = mapOf("wasReconnect" to wasReconnect)))
+        this.isReady = true
     }
 
     fun makeSubscriptions() {
@@ -239,11 +238,15 @@ class Transit(
     }
 
     fun sendNodeInfo(info: PacketInfo, nodeID: String?) {
+        logger.info("Connected = ${this.connected}, ready = ${this.isReady}")
         if (!this.connected || !this.isReady) return
+
+        logger.info("Called sendNodeInfo!!!!!!!!!!!!!!!!!!")
 
         try {
             this.publish(
                 PacketMessage(
+                    packetType = PacketType.PACKET_INFO,
                     target = nodeID ?: "",
                     packets = AnyMessage.pack(info)
                 )
