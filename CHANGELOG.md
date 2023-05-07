@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/sphericalkat/atomic-demo/compare/v1.2.0...v1.3.0) (2023-05-07)
+
+
+### Features
+
+* implement local node catalog ([f46e8e3](https://github.com/sphericalkat/atomic-demo/commit/f46e8e3424c39a97393d5851d1f26fc68fefdfc5))
+
 # [1.2.0](https://github.com/sphericalkat/atomic-demo/compare/v1.1.0...v1.2.0) (2023-05-06)
 
 
