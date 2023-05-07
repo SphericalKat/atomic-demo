@@ -22,6 +22,10 @@ class Registry(val broker: AtomicBroker) {
         this.discoverer.init(this)
     }
 
+    fun stop() {
+        this.discoverer.stop()
+    }
+
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(Registry::class.java)
     }

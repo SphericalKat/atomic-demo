@@ -19,12 +19,19 @@ data class QueueOptions(
     var options: Map<String, Any>? = null
 )
 
+data class Binding(
+    val queueName: String,
+    val topic: String,
+    val routingKey: String,
+)
+
 class AMQPTransport(broker: AtomicBroker) : Transport(broker) {
     var connectAttempt = 0
 
-    private lateinit var connection: Connection
+    private var connection: Connection? = null
     private var channel: Channel? = null
     private var connectionCount = 0
+    private val bindings = mutableListOf<Binding>()
     override val type: String
         get() = "AMQP"
 
@@ -35,7 +42,7 @@ class AMQPTransport(broker: AtomicBroker) : Transport(broker) {
         this.connection = factory.newConnection(broker.transporter)
 
         try {
-            connection.createChannel().let {
+            connection?.createChannel()?.let {
                 this.channel = it
                 this.connectionCount += 1
                 val isReconnect = this.connectionCount > 1
@@ -48,6 +55,19 @@ class AMQPTransport(broker: AtomicBroker) : Transport(broker) {
             }
         } catch (e: IOException) {
             logger.warn("Connection failed.", e)
+        }
+    }
+
+    override fun disconnect() {
+        this.connectionCount = 0
+        if (this.channel != null) {
+            this.bindings.forEach { this.channel?.queueUnbind(it.queueName, it.topic, it.routingKey) }
+            this.channel?.close()
+            this.connection?.close()
+
+            this.bindings.clear()
+            this.channel = null
+            this.connection = null
         }
     }
 
@@ -74,12 +94,15 @@ class AMQPTransport(broker: AtomicBroker) : Transport(broker) {
         } else {
             val queueName = "${this.prefix}.${cmd}.${this.nodeID}"
 
+            val binding = Binding(queueName = queueName, topic = topic, routingKey = "")
+            this.bindings.add(binding)
+
             channel.exchangeDeclare(topic, BuiltinExchangeType.FANOUT, true)
 
             val queueOptions = getQueueOptions(cmd)
             channel.queueDeclare(queueName, true, false, queueOptions.autoDelete, queueOptions.options)
 
-            channel.queueBind(queueName, topic, "")
+            channel.queueBind(binding.queueName, binding.topic, binding.routingKey)
             channel.basicConsume(queueName, consumeCallback(cmd)) { _ -> }
         }
     }

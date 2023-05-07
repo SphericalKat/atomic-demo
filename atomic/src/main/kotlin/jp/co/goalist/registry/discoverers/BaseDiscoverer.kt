@@ -60,6 +60,10 @@ abstract class BaseDiscoverer(
         return this.transit.sendHeartBeat(this.localNode!!)
     }
 
+    fun stop() {
+        this.stopHeartbeatTimers()
+    }
+
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(BaseDiscoverer::class.java)
     }

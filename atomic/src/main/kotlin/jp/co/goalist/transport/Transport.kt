@@ -147,6 +147,8 @@ abstract class Transport(protected val broker: AtomicBroker) {
         return this.publish(packet)
     }
 
+    abstract fun disconnect()
+
     companion object {
         private val logger = LoggerFactory.getLogger(Transport::class.java)
         fun resolveTransport(broker: AtomicBroker): Transport {

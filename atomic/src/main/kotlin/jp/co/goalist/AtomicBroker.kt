@@ -52,6 +52,11 @@ class AtomicBroker(
 
         this.started = false
         this.stopping = false
+
+        Runtime.getRuntime().addShutdownHook(Thread {
+            logger.info("Runtime shutdown hook triggered.")
+            this.stop()
+        })
     }
 
     fun start() {
@@ -61,6 +66,12 @@ class AtomicBroker(
         this.started = true
 
         logger.info("ServiceBroker with this.services.length service(s) started successfully in ${java.util.Date().time - startTime}ms.")
+    }
+
+    fun stop() {
+        this.started = false
+        this.transit.disconnect()
+        this.registry.stop()
     }
 
     fun fatal(message: String, e: Exception? = null, needExit: Boolean = true) {

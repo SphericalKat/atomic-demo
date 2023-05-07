@@ -37,6 +37,15 @@ class Transit(
         }
     }
 
+    fun disconnect() {
+        this.connected = false
+        this.isReady = false
+        this.disconnecting = true
+
+        this.broker.broadcastLocal("#transporter.disconnected", Event(mapOf("graceful" to true)))
+        this.tx.disconnect()
+    }
+
     private fun afterConnect(wasReconnect: Boolean) {
         if (wasReconnect) {
             // TODO: send local node info
