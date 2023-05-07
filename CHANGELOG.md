@@ -1,3 +1,11 @@
+# [1.5.0](https://github.com/sphericalkat/atomic-demo/compare/v1.4.0...v1.5.0) (2023-05-07)
+
+
+### Features
+
+* add methods for shutdown and deregistering ([2a6205f](https://github.com/sphericalkat/atomic-demo/commit/2a6205f841a82d3bc02c80efc50ac91c3e1d5f76))
+* implement heartbeat ([76ad718](https://github.com/sphericalkat/atomic-demo/commit/76ad718fdfcde25e3c886687bd2e59fd490257e7))
+
 # [1.4.0](https://github.com/sphericalkat/atomic-demo/compare/v1.3.0...v1.4.0) (2023-05-07)
 
 
