@@ -110,7 +110,7 @@ class AMQPTransport(broker: AtomicBroker) : Transport(broker) {
     override fun send(topic: String, data: ByteArray, meta: SendMeta) {
         if (this.channel == null) return
 
-        if (meta.packet?.target != null || meta.balanced) {
+        if (meta.packet?.target != "" || meta.balanced) {
             // there is a target, or this is a balanced send. either way, we publish directly to the queue
             // setting exchange as "" and routing key to topic directly publishes to the target queue
             this.channel!!.basicPublish("", topic, null, data)

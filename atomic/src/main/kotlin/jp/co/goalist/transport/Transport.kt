@@ -2,6 +2,7 @@ package jp.co.goalist.transport
 
 import jp.co.goalist.*
 import org.slf4j.LoggerFactory
+import kotlin.math.log
 
 abstract class Transport(protected val broker: AtomicBroker) {
     protected var prefix: String = "ATOM"
@@ -50,10 +51,11 @@ abstract class Transport(protected val broker: AtomicBroker) {
     abstract fun send(topic: String, data: ByteArray, meta: SendMeta)
 
     fun publish(packet: PacketMessage) {
-        val topic = getTopicName(packet.packetType, packet.target)
-        val data = this.serialize(packet)
+        val topic = getTopicName(packet.packetType, if (packet.target == "") null else packet.target)
 
-        return this.send(topic, data, SendMeta(packet = packet))
+        val data = this.serialize(packet)
+        this.send(topic, data, SendMeta(packet = packet))
+        return
     }
 
     protected fun incomingMessage(packetType: PacketType, msg: ByteArray) {

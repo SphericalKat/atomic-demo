@@ -119,14 +119,20 @@ class Transit(
             }
 
             when (cmd) {
-                PacketType.PACKET_REQUEST -> TODO()
-                PacketType.PACKET_RESPONSE -> TODO()
-                PacketType.PACKET_EVENT -> TODO()
-                PacketType.PACKET_DISCOVER -> this.discoverer.sendLocalNodeInfo(msg.packets!!.unpack(PacketDiscover.ADAPTER).sender)
-                PacketType.PACKET_INFO -> this.discoverer.processRemoteNodeInfo(msg.packets!!.unpack(PacketInfo.ADAPTER).sender, msg)
-                PacketType.PACKET_DISCONNECT -> TODO()
-                PacketType.PACKET_HEARTBEAT -> TODO()
-                PacketType.PACKET_PING -> TODO()
+                PacketType.PACKET_REQUEST -> {}
+                PacketType.PACKET_RESPONSE -> {}
+                PacketType.PACKET_EVENT -> {}
+                PacketType.PACKET_DISCOVER -> {
+                    logger.info("Received DISCOVER packet.")
+                    this.discoverer.sendLocalNodeInfo(msg.packets!!.unpack(PacketDiscover.ADAPTER).sender)
+                }
+                PacketType.PACKET_INFO -> {
+                    logger.info("Received INFO packet.")
+                    this.discoverer.processRemoteNodeInfo(msg.packets!!.unpack(PacketInfo.ADAPTER).sender, msg)
+                }
+                PacketType.PACKET_DISCONNECT -> {}
+                PacketType.PACKET_HEARTBEAT -> {}
+                PacketType.PACKET_PING -> {}
                 PacketType.PACKET_PONG -> processPong(msg.packets!!.unpack(PacketPong.ADAPTER))
                 else -> return true
             }
