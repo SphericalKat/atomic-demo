@@ -1,8 +1,11 @@
 package jp.co.goalist.utils
 
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
+import kotlin.time.Duration
 
 fun getSystemName(): String? {
     return try {
@@ -48,4 +51,12 @@ fun getIpAddresses(): List<String> {
     }
 
     return list.ifEmpty { internalList }
+}
+
+fun tickerFlow(period: Duration, initialDelay: Duration = Duration.ZERO) = flow {
+    delay(initialDelay)
+    while (true) {
+        emit(Unit)
+        delay(period)
+    }
 }

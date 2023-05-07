@@ -5,6 +5,7 @@ import jp.co.goalist.serializers.Serializers
 import jp.co.goalist.transport.AMQPTransport
 import jp.co.goalist.transport.Transit
 import jp.co.goalist.transport.Transport
+import jp.co.goalist.utils.LocalBus
 import jp.co.goalist.utils.getSystemName
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -31,6 +32,8 @@ class AtomicBroker(
     var started: Boolean
 
     var stopping: Boolean
+
+    var localBus = LocalBus()
 
 
     init {
@@ -59,6 +62,18 @@ class AtomicBroker(
         logger.error("Fatal error: $message $e")
 
         if (needExit) exitProcess(1)
+    }
+
+    fun emit(eventName: String, payload: Any) {
+        if (eventName.startsWith('#')) this.localBus.emit(eventName, payload)
+    }
+
+    fun broadcastLocal(eventName: String, payload: Any) {
+        logger.debug("Broadcast $eventName local event.")
+
+        if (eventName.startsWith('#')) this.localBus.emit(eventName, payload)
+
+        // TODO: local services emit etc
     }
 
     companion object {

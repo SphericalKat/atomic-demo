@@ -8,11 +8,10 @@ import jp.co.goalist.utils.getSystemName
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.management.ManagementFactory
-import kotlin.math.roundToLong
 
 class NodeCatalog(val registry: Registry, val broker: AtomicBroker) {
     private val nodes: MutableMap<String, Node> = mutableMapOf()
-    private var localNode: Node? = null
+    var localNode: Node? = null
 
     fun createLocalNode() {
         val node = Node(this.broker.nodeID)
@@ -81,6 +80,18 @@ class NodeCatalog(val registry: Registry, val broker: AtomicBroker) {
         val needRegister = node.update(payload, isReconnected)
 
         // TODO: a lot of stuff
+    }
+
+    fun disconnected(id: String, isUnexpected: Boolean = false) {
+        val node = this.get(id)
+        if (node != null && node.available) {
+            // TODO: node.disconnected()
+
+            if (isUnexpected) logger.warn("Node ${node.id} disconnected unexpectedly.")
+            else logger.info("Node ${node.id} disconnected.")
+
+            // TODO: if (this.broker.transit) this.broker.transit.removePendingRequestByNodeID(nodeID);
+        }
     }
 
     fun list(onlyAvailable: Boolean = false, withServices: Boolean = false): List<Node> {
