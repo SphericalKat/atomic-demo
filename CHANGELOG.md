@@ -1,3 +1,15 @@
+# [1.4.0](https://github.com/sphericalkat/atomic-demo/compare/v1.3.0...v1.4.0) (2023-05-07)
+
+
+### Bug Fixes
+
+* **localbus:** check for existing event flows when collecting ([fc7e4ec](https://github.com/sphericalkat/atomic-demo/commit/fc7e4ec9f009eb146cd6c2cffa25bd2ead29cd9e))
+
+
+### Features
+
+* implement local event emitter ([de06400](https://github.com/sphericalkat/atomic-demo/commit/de06400689f29a4ab0769ec623ebded88db1627a))
+
 # [1.3.0](https://github.com/sphericalkat/atomic-demo/compare/v1.2.0...v1.3.0) (2023-05-07)
 
 
