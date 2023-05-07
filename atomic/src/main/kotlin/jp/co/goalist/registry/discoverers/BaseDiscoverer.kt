@@ -1,6 +1,7 @@
 package jp.co.goalist.registry.discoverers
 
 import jp.co.goalist.AtomicBroker
+import jp.co.goalist.PacketMessage
 import jp.co.goalist.registry.Node
 import jp.co.goalist.registry.Registry
 import jp.co.goalist.transport.Transit
@@ -17,9 +18,9 @@ abstract class BaseDiscoverer(
     private val heartbeatInterval: Int = 10,
     private val heartbeatTimeout: Int = 30
 ) : CoroutineScope {
-    private lateinit var broker: AtomicBroker
-    private lateinit var transit: Transit
-    private lateinit var registry: Registry
+    protected lateinit var broker: AtomicBroker
+    protected lateinit var transit: Transit
+    protected lateinit var registry: Registry
     private var localNode: Node? = null
     private var heartbeatJob: Job? = null
 
@@ -63,6 +64,12 @@ abstract class BaseDiscoverer(
     fun stop() {
         this.stopHeartbeatTimers()
     }
+
+    fun processRemoteNodeInfo(nodeID: String, payload: PacketMessage) = this.broker.registry.processNodeInfo(payload)
+
+    abstract fun sendLocalNodeInfo(nodeID: String? = null)
+
+    abstract fun discoverAllNodes()
 
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(BaseDiscoverer::class.java)

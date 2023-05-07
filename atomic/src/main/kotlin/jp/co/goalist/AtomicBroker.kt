@@ -42,10 +42,10 @@ class AtomicBroker(
         this.nodeID = nodeID ?: "${getSystemName()}-${UUID.randomUUID()}"
         this.instanceID = UUID.randomUUID().toString()
         val tx = Transport.resolveTransport(this)
+        this.registry = Registry(this)
         this.transit = Transit(this, this.nodeID, this.instanceID, tx)
         logger.info("Transporter: ${tx.type}")
 
-        this.registry = Registry(this)
         this.registry.init()
 
         this.serializer = Serializers.resolve(serializer, this)
@@ -91,6 +91,8 @@ class AtomicBroker(
 
         // TODO: local services emit etc
     }
+
+    fun getLocalNodeInfo() = this.registry.getLocalNodeInfo()
 
     companion object {
         const val projectName = "ATOMIC"

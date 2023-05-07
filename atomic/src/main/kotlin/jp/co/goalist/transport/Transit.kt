@@ -8,16 +8,18 @@ import jp.co.goalist.utils.executeWithRetry
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
+import kotlin.math.log
 
 class Transit(
     private val broker: AtomicBroker,
     private val nodeID: String,
     private val instanceID: String,
-    private val tx: Transport,
+    val tx: Transport,
 ) {
     private var connected: Boolean = false
     private var disconnecting: Boolean = false
     private var isReady: Boolean = false
+    private var discoverer = broker.registry.discoverer
 
     init {
         this.tx.transit = this
@@ -48,10 +50,14 @@ class Transit(
 
     private fun afterConnect(wasReconnect: Boolean) {
         if (wasReconnect) {
-            // TODO: send local node info
+            this.discoverer.sendLocalNodeInfo()
         } else {
             this.makeSubscriptions()
         }
+
+        this.discoverer.discoverAllNodes()
+
+        Thread.sleep(500) // wait for incoming INFO packets
 
         // TODO: discover all nodes
         this.connected = true
@@ -116,8 +122,8 @@ class Transit(
                 PacketType.PACKET_REQUEST -> TODO()
                 PacketType.PACKET_RESPONSE -> TODO()
                 PacketType.PACKET_EVENT -> TODO()
-                PacketType.PACKET_DISCOVER -> TODO()
-                PacketType.PACKET_INFO -> TODO()
+                PacketType.PACKET_DISCOVER -> this.discoverer.sendLocalNodeInfo(msg.packets!!.unpack(PacketDiscover.ADAPTER).sender)
+                PacketType.PACKET_INFO -> this.discoverer.processRemoteNodeInfo(msg.packets!!.unpack(PacketInfo.ADAPTER).sender, msg)
                 PacketType.PACKET_DISCONNECT -> TODO()
                 PacketType.PACKET_HEARTBEAT -> TODO()
                 PacketType.PACKET_PING -> TODO()
@@ -180,12 +186,75 @@ class Transit(
     }
 
     fun discoverNodes() {
-        this.publish(
-            PacketMessage(
-                packetType = PacketType.PACKET_DISCOVER,
-                packets = AnyMessage.pack(PacketDiscover())
+        try {
+            this.publish(
+                PacketMessage(
+                    packetType = PacketType.PACKET_DISCOVER,
+                    packets = AnyMessage.pack(PacketDiscover())
+                )
             )
-        )
+        } catch (e: Exception) {
+            logger.error("Unable to send DISCOVER packet.", e)
+
+            this.broker.broadcastLocal(
+                "#transit.error", Event(
+                    mapOf(
+                        "error" to e,
+                        "module" to "transit",
+                        "type" to "failedNodesDiscovery"
+                    )
+                )
+            )
+        }
+    }
+
+    fun discoverNode(nodeID: String) {
+        try {
+            this.publish(
+                PacketMessage(
+                    target = nodeID,
+                    packetType = PacketType.PACKET_DISCOVER,
+                    packets = AnyMessage.pack(PacketDiscover())
+                )
+            )
+        } catch (e: Exception) {
+            logger.error("Unable to send DISCOVER packet to $nodeID node.", e)
+
+            this.broker.broadcastLocal(
+                "#transit.error", Event(
+                    mapOf(
+                        "error" to e,
+                        "module" to "transit",
+                        "type" to "failedNodeDiscovery"
+                    )
+                )
+            )
+        }
+    }
+
+    fun sendNodeInfo(info: PacketInfo, nodeID: String?) {
+        if (!this.connected || !this.isReady) return
+
+        try {
+            this.publish(
+                PacketMessage(
+                    target = nodeID ?: "",
+                    packets = AnyMessage.pack(info)
+                )
+            )
+        } catch (e: Exception) {
+            logger.error("Unable to send INFO packet to $nodeID node.")
+
+            this.broker.broadcastLocal(
+                "#transit.error", Event(
+                    mapOf(
+                        "error" to e,
+                        "module" to "transit",
+                        "type" to "failedSendInfoPacket"
+                    )
+                )
+            )
+        }
     }
 
     fun publish(packet: PacketMessage) {

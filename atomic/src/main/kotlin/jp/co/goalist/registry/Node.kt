@@ -25,7 +25,13 @@ class Node(
         this.client = packet.client
 
         this.rawInfo = packet
-        val newSeq = payload
+        val newSeq = packet.seq
+
+        if (newSeq > this.seq || isReconnected || packet.instanceID != this.instanceID) {
+            this.instanceID = packet.instanceID
+            this.seq = newSeq
+            return true
+        }
 
         return false
     }

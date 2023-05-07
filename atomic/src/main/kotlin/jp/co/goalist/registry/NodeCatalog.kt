@@ -3,6 +3,7 @@ package jp.co.goalist.registry
 import jp.co.goalist.AtomicBroker
 import jp.co.goalist.PacketInfo
 import jp.co.goalist.PacketMessage
+import jp.co.goalist.utils.Event
 import jp.co.goalist.utils.getIpAddresses
 import jp.co.goalist.utils.getSystemName
 import org.slf4j.Logger
@@ -62,7 +63,7 @@ class NodeCatalog(val registry: Registry, val broker: AtomicBroker) {
      */
     fun onlineCount(): Int = this.nodes.values.count { it.available }
 
-    fun processNodeInfo(payload: PacketMessage) {
+    fun processNodeInfo(payload: PacketMessage): Node {
         val nodeID = payload.sender
         var node = this.get(nodeID)
         var isNew = false
@@ -83,7 +84,26 @@ class NodeCatalog(val registry: Registry, val broker: AtomicBroker) {
 
         val needRegister = node.update(payload, isReconnected)
 
-        // TODO: a lot of stuff
+        if (isNew) {
+            this.broker.broadcastLocal("#node.connected", Event(mapOf(
+                "node" to node,
+                "reconnected" to false,
+            )))
+            logger.info("Node $nodeID connected.")
+        } else if (isReconnected) {
+            this.broker.broadcastLocal("#node.connected", Event(mapOf(
+                "node" to node,
+                "reconnected" to true,
+            )))
+            logger.info("Node $nodeID reconnected.")
+        } else {
+            this.broker.broadcastLocal("#node.updated", Event(mapOf(
+                "node" to node
+            )))
+            logger.info("Node $nodeID updated.")
+        }
+
+        return node
     }
 
     fun disconnected(id: String, isUnexpected: Boolean = false) {
