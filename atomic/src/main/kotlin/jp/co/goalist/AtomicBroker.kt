@@ -1,5 +1,6 @@
 package jp.co.goalist
 
+import jp.co.goalist.registry.Registry
 import jp.co.goalist.serializers.BaseSerializer
 import jp.co.goalist.serializers.Serializers
 import jp.co.goalist.transport.AMQPTransport
@@ -35,14 +36,17 @@ class AtomicBroker(
 
     var localBus = LocalBus()
 
+    var registry: Registry
 
     init {
         this.nodeID = nodeID ?: "${getSystemName()}-${UUID.randomUUID()}"
         this.instanceID = UUID.randomUUID().toString()
         val tx = Transport.resolveTransport(this)
         this.transit = Transit(this, this.nodeID, this.instanceID, tx)
-
         logger.info("Transporter: ${tx.type}")
+
+        this.registry = Registry(this)
+        this.registry.init()
 
         this.serializer = Serializers.resolve(serializer, this)
 
@@ -52,6 +56,7 @@ class AtomicBroker(
 
     fun start() {
         val startTime = java.util.Date().time
+
         this.transit.connect()
         this.started = true
 

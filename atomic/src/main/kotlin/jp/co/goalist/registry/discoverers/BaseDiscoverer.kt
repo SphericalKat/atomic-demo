@@ -36,8 +36,9 @@ abstract class BaseDiscoverer(
     fun startHeartbeatTimers() {
         val time = heartbeatInterval * 1000 + ((Math.random() * 1000).roundToInt() - 500)
 
+
         this.heartbeatJob = launch(Dispatchers.IO) {
-            tickerFlow(time.toDuration(DurationUnit.SECONDS)).cancellable().collect { beat() }
+            tickerFlow(time.toDuration(DurationUnit.MILLISECONDS)).cancellable().collect { beat() }
         }
     }
 

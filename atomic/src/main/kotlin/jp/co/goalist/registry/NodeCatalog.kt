@@ -13,6 +13,10 @@ class NodeCatalog(val registry: Registry, val broker: AtomicBroker) {
     private val nodes: MutableMap<String, Node> = mutableMapOf()
     var localNode: Node? = null
 
+    init {
+        this.createLocalNode()
+    }
+
     fun createLocalNode() {
         val node = Node(this.broker.nodeID)
         node.local = true

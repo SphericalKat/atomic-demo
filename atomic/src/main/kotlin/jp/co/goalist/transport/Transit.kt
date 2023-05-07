@@ -3,6 +3,7 @@ package jp.co.goalist.transport
 import com.squareup.wire.AnyMessage
 import jp.co.goalist.*
 import jp.co.goalist.registry.Node
+import jp.co.goalist.utils.Event
 import jp.co.goalist.utils.executeWithRetry
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -36,7 +37,7 @@ class Transit(
         }
     }
 
-    private fun afterConnect(wasReconnect: Boolean): Unit {
+    private fun afterConnect(wasReconnect: Boolean) {
         if (wasReconnect) {
             // TODO: send local node info
         } else {
@@ -45,6 +46,7 @@ class Transit(
 
         // TODO: discover all nodes
         this.connected = true
+        this.broker.broadcastLocal("#transporter.connected", Event(data = mapOf("wasReconnect" to wasReconnect)))
     }
 
     fun makeSubscriptions() {

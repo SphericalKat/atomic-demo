@@ -27,17 +27,17 @@ class LocalBus(override val coroutineContext: CoroutineContext = Job()) : Corout
             flow.onEach { callBack(it) }.launchIn(this)
 
             flows[eventName] = flow
-            logger.debug("Registered new event $eventName")
+            logger.info("Registered new event $eventName")
         } else {
             existingFlow.onEach { callBack(it) }.launchIn(this)
-            logger.debug("Registered new event handler on existing event $eventName")
+            logger.info("Registered new event handler on existing event $eventName")
         }
     }
 
     fun emit(eventName: String, data: Any) {
         val flow = flows[eventName]
         runBlocking { flow?.emit(Event(data)) }
-        logger.debug("Emitted event $eventName")
+        logger.info("Emitted event $eventName")
     }
 
     companion object {
