@@ -121,7 +121,7 @@ class AMQPTransport(broker: AtomicBroker) : Transport(broker) {
 
     private fun consumeCallback(cmd: PacketType, needAck: Boolean = false): (String, Delivery) -> Unit {
         return { _: String, msg: Delivery ->
-            val result = this.receive(cmd, msg.body)
+            this.receive(cmd, msg.body)
 
             // If a promise is returned, acknowledge the message after it has resolved.
             // This means that if a worker dies after receiving a message but before responding, the

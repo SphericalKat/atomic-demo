@@ -1,7 +1,7 @@
 plugins {
     id("java-library")
     id ("maven-publish")
-    kotlin("jvm") version "1.7.22"
+    kotlin("jvm") version "1.8.20"
     id("com.squareup.wire") version ("4.6.0")
 }
 
@@ -57,6 +57,11 @@ dependencies {
 
     // protobuf
     implementation("com.google.protobuf:protobuf-kotlin:3.22.4")
+
+    // coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
 }
 

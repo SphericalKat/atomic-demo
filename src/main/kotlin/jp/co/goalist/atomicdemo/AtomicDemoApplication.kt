@@ -1,6 +1,7 @@
 package jp.co.goalist.atomicdemo
 
 import jp.co.goalist.AtomicBroker
+import jp.co.goalist.utils.getIpAddresses
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.stereotype.Component
@@ -22,5 +23,7 @@ class AtomicComponent {
 class AtomicDemoApplication
 
 fun main(args: Array<String>) {
+	getIpAddresses()
+
 	runApplication<AtomicDemoApplication>(*args)
 }

@@ -8,6 +8,7 @@ abstract class Transport(protected val broker: AtomicBroker) {
     protected var nodeID: String
     protected val instanceID: String
     var afterConnect: ((Boolean) -> Unit)? = null
+    var messageHandler: ((cmd: PacketType, msg: PacketMessage) -> Unit)? = null
     lateinit var transit: Transit
 
     abstract val type: String
@@ -34,6 +35,7 @@ abstract class Transport(protected val broker: AtomicBroker) {
     protected fun receive(packetType: PacketType, msg: ByteArray) {
         try {
             val packet = this.deserialize(packetType, msg)
+            this.messageHandler?.let { it(packetType, packet!!) }
         } catch (e: Exception) {
             logger.warn("Invalid incoming packet. Type: $packetType", e)
             logger.debug("Content: {}", msg)
@@ -52,6 +54,18 @@ abstract class Transport(protected val broker: AtomicBroker) {
         val data = this.serialize(packet)
 
         return this.send(topic, data, SendMeta(packet = packet))
+    }
+
+    protected fun incomingMessage(packetType: PacketType, msg: ByteArray) {
+        if (msg.isEmpty()) return;
+
+        try {
+            val packet = this.deserialize(packetType, msg)
+            this.messageHandler?.let { it(packetType, packet!!) }
+        } catch (e: Exception) {
+            logger.warn("Invalid incoming packet. Type: $packetType", e)
+
+        }
     }
 
     private fun requestHandler(payload: MutableMap<String, Any>) {
@@ -86,7 +100,51 @@ abstract class Transport(protected val broker: AtomicBroker) {
             ver = AtomicBroker.PROTOCOL_VER.toString(),
             sender = this.nodeID,
         )
-        return this.broker.serializer.serialize(newPacket, newPacket.packetType)
+        return this.broker.serializer.serialize(newPacket, packet.packetType)
+    }
+
+    protected fun publishBalancedRequest(packet: PacketRequest) {
+        val topic = "${this.prefix}.${PacketType.PACKET_REQUEST}B.${packet.action}"
+        val data = this.serialize(PacketMessage())
+    }
+
+    fun prepublish(packet: PacketMessage) {
+        // safely handle disconnected state
+        if (!this.connected) {
+            // for packets that are triggered intentionally by users, throw a retryable error
+            if (listOf(
+                    PacketType.PACKET_REQUEST,
+                    PacketType.PACKET_EVENT,
+                    PacketType.PACKET_PING
+                ).indexOf(packet.packetType) != 0
+            ) {
+                throw Errors.BrokerDisconnectedError()
+                // for internal packets, like INFO and HEARTBEAT, skip sending and don't throw
+            } else {
+                return
+            }
+        }
+
+        if (packet.packetType == PacketType.PACKET_EVENT && packet.target == "" && packet.packets?.unpackOrNull(
+                PacketEvent.ADAPTER
+            )?.groups?.isNotEmpty() == true
+        ) {
+            val packetEvent = packet.packets.unpack(PacketEvent.ADAPTER)
+            val groups = packetEvent.groups
+            // If the packet contains groups, we don't send the packet to
+            // the targeted node, but we push them to the event group queues
+            // and AMQP will load-balance it.
+            groups.forEach {
+                val copy = packetEvent.copy(groups = listOf(it))
+                // TODO: publish balanced event
+            }
+            return
+        } else if (packet.packetType == PacketType.PACKET_REQUEST && packet.target == "") {
+            // TODO: publish balanced request
+            return
+        }
+
+        return this.publish(packet)
     }
 
     companion object {

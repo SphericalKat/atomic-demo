@@ -1,6 +1,8 @@
 package jp.co.goalist.utils
 
+import java.net.Inet4Address
 import java.net.InetAddress
+import java.net.NetworkInterface
 
 fun getSystemName(): String? {
     return try {
@@ -26,4 +28,24 @@ inline fun <T> executeWithRetry(
         }
     }
     return null
+}
+
+fun getIpAddresses(): List<String> {
+    val interfaces = NetworkInterface.getNetworkInterfaces().iterator()
+    val list = mutableListOf<String>()
+    val internalList = mutableListOf<String>()
+    interfaces.forEach { netInt ->
+        netInt.inetAddresses
+            .toList()
+            .filterIsInstance<Inet4Address>()
+            .forEach { addr ->
+                if (addr.isLoopbackAddress) {
+                    internalList.add(addr.hostAddress)
+                } else {
+                    list.add(addr.hostAddress)
+                }
+            }
+    }
+
+    return list.ifEmpty { internalList }
 }

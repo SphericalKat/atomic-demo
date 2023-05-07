@@ -24,7 +24,7 @@ class AtomicBroker(
     var transporter: String = transporter
         private set
 
-    private var transit: Transit
+    var transit: Transit
 
     var serializer: BaseSerializer
 
@@ -48,10 +48,11 @@ class AtomicBroker(
     }
 
     fun start() {
+        val startTime = java.util.Date().time
         this.transit.connect()
         this.started = true
 
-        logger.info("ServiceBroker with this.services.length service(s) started successfully.")
+        logger.info("ServiceBroker with this.services.length service(s) started successfully in ${java.util.Date().time - startTime}ms.")
     }
 
     fun fatal(message: String, e: Exception? = null, needExit: Boolean = true) {
