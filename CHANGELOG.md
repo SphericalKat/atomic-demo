@@ -1,3 +1,15 @@
+# [1.6.0](https://github.com/sphericalkat/atomic-demo/compare/v1.5.0...v1.6.0) (2023-05-07)
+
+
+### Bug Fixes
+
+* **transit:** prevent errors due to unimplemented handlers ([9079167](https://github.com/sphericalkat/atomic-demo/commit/90791677f42e523aa98d1764b7416297dd54aefe))
+
+
+### Features
+
+* initial attempt at discovery ([56cde63](https://github.com/sphericalkat/atomic-demo/commit/56cde63af0f6d7009db60b0d7be8c4741ddb2334))
+
 # [1.5.0](https://github.com/sphericalkat/atomic-demo/compare/v1.4.0...v1.5.0) (2023-05-07)
 
 
