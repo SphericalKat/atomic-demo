@@ -241,7 +241,7 @@ class Transit(
         logger.info("Connected = ${this.connected}, ready = ${this.isReady}")
         if (!this.connected || !this.isReady) return
 
-        logger.info("Called sendNodeInfo!!!!!!!!!!!!!!!!!!")
+        logger.info("Called sendNodeInfo!")
 
         try {
             this.publish(
