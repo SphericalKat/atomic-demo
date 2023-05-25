@@ -40,6 +40,7 @@ class AtomicBroker(
 
     init {
         this.nodeID = nodeID ?: "${getSystemName()}-${UUID.randomUUID()}"
+        logger.info("NodeID: ${this.nodeID}")
         this.instanceID = UUID.randomUUID().toString()
         val tx = Transport.resolveTransport(this)
         this.registry = Registry(this)

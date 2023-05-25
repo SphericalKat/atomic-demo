@@ -122,8 +122,7 @@ class Transit(
                 PacketType.PACKET_RESPONSE -> {}
                 PacketType.PACKET_EVENT -> {}
                 PacketType.PACKET_DISCOVER -> {
-                    logger.info("Received DISCOVER packet.")
-                    this.discoverer.sendLocalNodeInfo(msg.packets!!.unpack(PacketDiscover.ADAPTER).sender)
+                    this.discoverer.sendLocalNodeInfo(msg.sender)
                 }
                 PacketType.PACKET_INFO -> {
                     logger.info("Received INFO packet.")
