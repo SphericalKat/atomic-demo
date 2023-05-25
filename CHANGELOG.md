@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/sphericalkat/atomic-demo/compare/v1.6.0...v1.6.1) (2023-05-07)
+
+
+### Bug Fixes
+
+* most bugs related to discovery ([1fd9e42](https://github.com/sphericalkat/atomic-demo/commit/1fd9e42eb78e2a037cd2eb3d8e970972edf1f0db))
+
 # [1.6.0](https://github.com/sphericalkat/atomic-demo/compare/v1.5.0...v1.6.0) (2023-05-07)
 
 
