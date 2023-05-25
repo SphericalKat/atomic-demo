@@ -1,3 +1,11 @@
+## [1.6.2](https://github.com/sphericalkat/atomic-demo/compare/v1.6.1...v1.6.2) (2023-05-25)
+
+
+### Bug Fixes
+
+* dial down the logging ([8d6a899](https://github.com/sphericalkat/atomic-demo/commit/8d6a8998969c96589f8f93afdb557eee887e3e3d))
+* **transit:** pull off correct sender ([1958255](https://github.com/sphericalkat/atomic-demo/commit/195825541baf09de4f11af1fb8d7efb99d3eabd2))
+
 ## [1.6.1](https://github.com/sphericalkat/atomic-demo/compare/v1.6.0...v1.6.1) (2023-05-07)
 
 
